@@ -48,6 +48,22 @@ const formatTime = (ts) =>
 const formatFullDateTime = (ts) =>
   new Date(ts).toLocaleString('en-GH', { dateStyle: 'full', timeStyle: 'short' });
 
+// Backend now tells the model not to use markdown, but LLMs don't always
+// follow formatting instructions perfectly, and this bubble just renders
+// plain text (no markdown renderer), so leftover **bold**, *italic*, or
+// backslash-escaped symbols would show up as literal clutter. This is a
+// safety net, not the primary fix.
+const stripMarkdown = (text) => text
+  .replace(/\\([*_`#])/g, '$1')     // backslash-escaped symbols, e.g. \* -> *
+  .replace(/\*\*\*(.+?)\*\*\*/g, '$1') // ***bold italic***
+  .replace(/\*\*(.+?)\*\*/g, '$1')       // **bold**
+  .replace(/\*(.+?)\*/g, '$1')             // *italic*
+  .replace(/__(.+?)__/g, '$1')             // __bold__
+  .replace(/_(.+?)_/g, '$1')               // _italic_
+  .replace(/`(.+?)`/g, '$1')               // `code`
+  .replace(/^#{1,6}\s+/gm, '')             // # headers
+  .replace(/^[-*]\s+/gm, '\u2022 ');       // - or * bullets -> a plain bullet char
+
 const AIAdvisor = () => {
   const { user } = useAuth();
   // Per-user sessionStorage key so chat history doesn't leak across accounts
@@ -230,7 +246,7 @@ const AIAdvisor = () => {
                   </div>
                   <div className="chat-bubble-col">
                     <div className={`chat-bubble ${m.role}`} style={{ whiteSpace: 'pre-wrap' }}>
-                      {m.text}
+                      {m.role === 'ai' ? stripMarkdown(m.text) : m.text}
                     </div>
                     {m.ts && (
                       <div className="chat-time" title={formatFullDateTime(m.ts)}>

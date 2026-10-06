@@ -136,7 +136,8 @@ const Dashboard = () => {
             alignItems: 'center'
           }}
         >
-          <div style={{ fontSize: '1.8rem', display: 'flex' }}><MdWarning /></div>
+          {/* ── CHANGED: 1.8rem → 2.2rem ── */}
+          <div style={{ fontSize: '2.2rem', display: 'flex' }}><MdWarning /></div>
           <div>
             <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.2rem' }}>
               Survival Mode Active
@@ -218,8 +219,12 @@ const Dashboard = () => {
                 color: streak >= 7 ? '#fff' : '#0A2E1A'
               }}
             >
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                {streak >= 7 ? <MdLocalFireDepartment /> : streak >= 3 ? <MdStar /> : <MdCheckCircle />}
+              {/* ── CHANGED: icon now in its own span sized independently of
+                  the surrounding text (was inheriting 1.1rem, easy to miss) ── */}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ display: 'inline-flex', fontSize: '1.8rem', lineHeight: 1 }}>
+                  {streak >= 7 ? <MdLocalFireDepartment /> : streak >= 3 ? <MdStar /> : <MdCheckCircle />}
+                </span>
                 {streak >= 7 ? 'On fire! Keep it up!' : streak >= 3 ? 'Great consistency!' : 'Good start!'}
               </span>
             </div>
@@ -336,7 +341,8 @@ const Dashboard = () => {
                   textAlign: 'center'
                 }}
               >
-                <div style={{ fontSize: '1.2rem', display: 'flex', justifyContent: 'center' }}><f.icon /></div>
+                {/* ── CHANGED: 1.2rem → 1.8rem ── */}
+                <div style={{ fontSize: '1.8rem', display: 'flex', justifyContent: 'center' }}><f.icon /></div>
                 <div
                   style={{
                     fontSize: '0.72rem',
@@ -414,7 +420,8 @@ const Dashboard = () => {
             to last the remaining {daysLeft} days {nextPayday ? `(until ${nextPayday})` : ''}
           </div>
         </div>
-        <div style={{ fontSize: '2rem', opacity: 0.85, display: 'flex' }}>
+        {/* ── CHANGED: 2rem → 2.3rem ── */}
+        <div style={{ fontSize: '2.3rem', opacity: 0.85, display: 'flex' }}>
           <MdToday />
         </div>
       </div>

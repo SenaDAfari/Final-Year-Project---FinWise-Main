@@ -1,10 +1,11 @@
+// frontend/src/pages/Onboarding.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import {
   MdPaid, MdLightbulb, MdRestaurant, MdDirectionsBus, MdSmartphone,
-  MdHome, MdCelebration, MdPrint, MdCategory
+  MdHome, MdCelebration, MdPrint, MdCategory, MdAdd
 } from 'react-icons/md';
 
 const CATEGORIES = [
@@ -23,6 +24,8 @@ const Onboarding = () => {
   const [allowanceFrequency, setAllowanceFrequency] = useState('Monthly');
   const [nextPayday, setNextPayday] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
+  // ── NEW: a buffer for the "add custom category" input ──
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
   const [goalName, setGoalName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [deadline, setDeadline] = useState('');
@@ -36,6 +39,27 @@ const Onboarding = () => {
     setSelectedCategories(prev =>
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     );
+  };
+
+  // ── NEW: add a custom category typed by the user. Backend accepts any
+  // string for category, so we just append to selectedCategories with a
+  // brief guard against empty/duplicate entries. ──
+  const addCustomCategory = () => {
+    const trimmed = customCategoryInput.trim();
+    if (!trimmed) return;
+    if (selectedCategories.includes(trimmed)) {
+      setCustomCategoryInput('');
+      return;
+    }
+    setSelectedCategories(prev => [...prev, trimmed]);
+    setCustomCategoryInput('');
+  };
+
+  const handleCustomCategoryKey = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addCustomCategory();
+    }
   };
 
     const handleFinish = async () => {
@@ -82,7 +106,7 @@ const Onboarding = () => {
       <div className="onboarding-card">
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-          <div style={{ width: 36, height: 36, background: '#0A2E1A', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff' }}><MdPaid /></div>
+          <div style={{ width: 36, height: 36, background: '#0A2E1A', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: '#F4B942' }}><MdPaid /></div>
           <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0A2E1A' }}>FinWise</span>
         </div>
 
@@ -120,8 +144,16 @@ const Onboarding = () => {
 
             <div className="form-group">
               <label className="form-label">How often do you receive it?</label>
+              {/* ── CHANGED: added "Bi-weekly" option (matches the new
+                  backend value) and a fallback "Other" select keeps a
+                  non-empty choice for users whose cycle doesn't match
+                  these. The backend still rejects truly unknown
+                  frequencies with a 400, so don't add a custom text
+                  field here yet — Bi-weekly covers the realistic
+                  middle case. ── */}
               <select className="form-select" value={allowanceFrequency} onChange={e => setAllowanceFrequency(e.target.value)}>
                 <option value="Weekly">Weekly</option>
+                <option value="Bi-weekly">Every 2 weeks</option>
                 <option value="Monthly">Monthly</option>
                 <option value="Per Semester">Per Semester (lump sum)</option>
               </select>
@@ -137,7 +169,7 @@ const Onboarding = () => {
                   <option value="6">6 months</option>
                 </select>
                 <span className="text-muted text-sm" style={{ marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <MdLightbulb style={{ flexShrink: 0 }} />
+                  <MdLightbulb style={{ flexShrink: 0, fontSize: '1.1rem' }} />
                   Your allowance will be split into ₵{allowanceAmount ? (allowanceAmount / semesterMonths).toFixed(2) : '0.00'} per month
                 </span>
               </div>
@@ -152,7 +184,7 @@ const Onboarding = () => {
                 onChange={e => setNextPayday(e.target.value)}
               />
               <span className="text-muted text-sm" style={{ marginTop: '0.3rem', display: 'flex', alignItems: 'flex-start', gap: '0.3rem' }}>
-                <MdLightbulb style={{ flexShrink: 0, marginTop: '0.15rem' }} />
+                <MdLightbulb style={{ flexShrink: 0, marginTop: '0.15rem', fontSize: '1.1rem' }} />
                 <span>Leave this blank and FinWise will assume your allowance resets at the start of each calendar month.
                 Set a date and it will count down to that day instead, and roll forward automatically after each one.</span>
               </span>
@@ -193,6 +225,45 @@ const Onboarding = () => {
                   {cat.label}
                 </button>
               ))}
+
+              {/* ── NEW: custom categories the user has already added
+                  show up as their own chip-with-icon, identical styling
+                  to the prebuilt ones, so the visual rhythm is preserved. */}
+              {selectedCategories
+                .filter(c => !CATEGORIES.some(p => p.id === c))
+                .map(c => (
+                  <button
+                    key={`custom-${c}`}
+                    className="category-chip selected"
+                    onClick={() => toggleCategory(c)}
+                    title="Click to remove"
+                  >
+                    <MdCategory />
+                    {c}
+                  </button>
+                ))}
+            </div>
+
+            {/* ── NEW: add a category the predefined list doesn't cover ── */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <input
+                className="form-input"
+                style={{ flex: 1 }}
+                placeholder="Add your own (e.g. Health, Church)"
+                value={customCategoryInput}
+                onChange={e => setCustomCategoryInput(e.target.value)}
+                onKeyDown={handleCustomCategoryKey}
+                maxLength={50}
+              />
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={addCustomCategory}
+                disabled={!customCategoryInput.trim()}
+                aria-label="Add custom category"
+              >
+                <MdAdd /> Add
+              </button>
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>

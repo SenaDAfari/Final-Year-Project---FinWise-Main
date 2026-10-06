@@ -314,8 +314,9 @@ def onboarding():
 
     user.allowance_amount = parse_positive_amount(data.get('allowance_amount'), 'allowance_amount')
     frequency = data.get('allowance_frequency')
-    if frequency not in ('Monthly', 'Weekly', 'Per Semester'):
-        raise ValidationError('allowance_frequency must be Monthly, Weekly or Per Semester')
+    # ── CHANGED: added 'Bi-weekly' to the accepted set of allowance frequencies ──
+    if frequency not in ('Monthly', 'Weekly', 'Bi-weekly', 'Per Semester'):
+        raise ValidationError("allowance_frequency must be 'Monthly', 'Weekly', 'Bi-weekly' or 'Per Semester'")
     user.allowance_frequency = frequency
 
     categories = data.get('categories', [])
@@ -330,6 +331,10 @@ def onboarding():
         user.monthly_budget = round(user.allowance_amount / months, 2)
     elif user.allowance_frequency == 'Weekly':
         user.monthly_budget = round(user.allowance_amount * 4, 2)
+        user.semester_months = 1
+    # ── CHANGED: Bi-weekly budget math — two payments per month on average ──
+    elif user.allowance_frequency == 'Bi-weekly':
+        user.monthly_budget = round(user.allowance_amount * 2, 2)
         user.semester_months = 1
     else:
         user.monthly_budget = user.allowance_amount
@@ -363,8 +368,9 @@ def update_income():
             user.allowance_amount = parse_positive_amount(data['allowance_amount'], 'allowance_amount')
         if 'allowance_frequency' in data:
             frequency = data['allowance_frequency']
-            if frequency not in ('Monthly', 'Weekly', 'Per Semester'):
-                raise ValidationError('allowance_frequency must be Monthly, Weekly or Per Semester')
+            # ── CHANGED: added 'Bi-weekly' to the accepted set of allowance frequencies ──
+            if frequency not in ('Monthly', 'Weekly', 'Bi-weekly', 'Per Semester'):
+                raise ValidationError("allowance_frequency must be 'Monthly', 'Weekly', 'Bi-weekly' or 'Per Semester'")
             user.allowance_frequency = frequency
         if 'categories' in data:
             categories = data['categories']
@@ -378,6 +384,10 @@ def update_income():
             user.monthly_budget = round(user.allowance_amount / months, 2)
         elif user.allowance_frequency == 'Weekly':
             user.monthly_budget = round(user.allowance_amount * 4, 2)
+            user.semester_months = 1
+        # ── CHANGED: Bi-weekly budget math — two payments per month on average ──
+        elif user.allowance_frequency == 'Bi-weekly':
+            user.monthly_budget = round(user.allowance_amount * 2, 2)
             user.semester_months = 1
         else:
             user.monthly_budget = user.allowance_amount
@@ -453,6 +463,10 @@ def get_next_payday(user, today):
     if frequency == 'Weekly':
         while anchor < today:
             anchor += timedelta(days=7)
+    # ── CHANGED: Bi-weekly payday rolls forward in 14-day steps ──
+    elif frequency == 'Bi-weekly':
+        while anchor < today:
+            anchor += timedelta(days=14)
     elif frequency == 'Per Semester':
         step = user.semester_months or 4
         while anchor < today:
@@ -1196,7 +1210,7 @@ def get_notifications():
             notifications.append({
                 'type': 'success',
                 'route': '/limits',
-                'message': f"🎉 You're on track with all {len(limits)} of your spending limit{'s' if len(limits) != 1 else ''} this cycle. Keep it up!"
+                'message': f"You're on track with all {len(limits)} of your spending limit{'s' if len(limits) != 1 else ''} this cycle. Keep it up!"
             })
 
     streak = calculate_streak(user)
@@ -1204,15 +1218,15 @@ def get_notifications():
         notifications.append({
             'type': 'success',
             'route': '/dashboard',
-            'message': f"🔥 You've stayed within your daily budget for {streak} days in a row. Great discipline!"
+            'message': f"You've stayed within your daily budget for {streak} days in a row. Great discipline!"
         })
 
     health = calculate_health_score(user)
-    if health['score'] >= POSITIVE_HEALTH_SCORE_THRESHOLD:
+    if health['score'] >= POSITIVE_HEALTH_SCORE_THRESHOLD and not health['new_account']:
         notifications.append({
             'type': 'success',
             'route': '/dashboard',
-            'message': f"🟢 Your financial health score is excellent ({health['score']}/100). You're managing your money really well."
+            'message': f"Your financial health score is excellent ({health['score']}/100). You're managing your money really well."
         })
 
     return jsonify(notifications)
@@ -1231,6 +1245,12 @@ def get_user_context(user):
         cats[e.category] = cats.get(e.category, 0) + e.amount
     goal = SavingsGoal.query.filter_by(user_id=user.id).order_by(SavingsGoal.id.asc()).first()
     return total, remaining, cats, goal, monthly_budget
+
+# A brand-new account has had no chance to save yet, so the savings-consistency
+# rules in calculate_health_score only start applying after this many days.
+# Set to 0 to apply them immediately (e.g. to demonstrate the "no savings
+# deposit" penalty on a freshly created test account).
+NEW_ACCOUNT_GRACE_DAYS = 3
 
 def calculate_health_score(user):
     month_str = datetime.now().strftime('%Y-%m')
@@ -1260,21 +1280,30 @@ def calculate_health_score(user):
             score -= 10
             reasons.append("You have used over 70% of your monthly budget")
 
+    # New accounts get a short grace period before savings rules apply
+    # (a missing created_at is treated as an established account).
+    in_grace = bool(
+        NEW_ACCOUNT_GRACE_DAYS > 0
+        and user.created_at
+        and (datetime.utcnow() - user.created_at).days < NEW_ACCOUNT_GRACE_DAYS
+    )
+
     # Savings consistency (30 points): no deposit this month costs 30; a goal
     # that is less than 10% funded costs 15. Having no goal means no deposits.
-    goals = _user_goals(user.id)
-    if not goals:
-        score -= 30
-        reasons.append("You have not set a savings goal yet")
-    else:
-        total_saved = sum(g.saved_amount for g in goals)
-        total_target = sum(g.target_amount for g in goals)
-        if not _month_deposits_all_goals(goals, month_str):
+    if not in_grace:
+        goals = _user_goals(user.id)
+        if not goals:
             score -= 30
-            reasons.append("You have not made any savings deposits this month")
-        elif total_saved < total_target * 0.1:
-            score -= 15
-            reasons.append("Your savings progress is very low compared to your target")
+            reasons.append("You have not set a savings goal yet")
+        else:
+            total_saved = sum(g.saved_amount for g in goals)
+            total_target = sum(g.target_amount for g in goals)
+            if not _month_deposits_all_goals(goals, month_str):
+                score -= 30
+                reasons.append("You have not made any savings deposits this month")
+            elif total_saved < total_target * 0.1:
+                score -= 15
+                reasons.append("Your savings progress is very low compared to your target")
 
     if month_exp:
         cats = {}
@@ -1300,14 +1329,20 @@ def calculate_health_score(user):
     else:
         status, emoji, label = 'critical', '🔴', 'Critical'
 
-    top_reason = reasons[0] if reasons else "Keep up the good work and stay consistent!"
+    if reasons:
+        top_reason = reasons[0]
+    elif in_grace:
+        top_reason = "Welcome! Log your expenses and make your first savings deposit to build your score."
+    else:
+        top_reason = "Keep up the good work and stay consistent!"
 
     return {
         'score': score,
         'status': status,
         'emoji': emoji,
         'label': label,
-        'reason': top_reason
+        'reason': top_reason,
+        'new_account': in_grace
     }
 
 @app.route('/api/health-score', methods=['GET'])
@@ -1335,7 +1370,7 @@ def ai_tip():
     tip = f"You've spent ₵{total:.2f} this month with ₵{remaining:.2f} remaining. {'You are running low — focus on essentials only.' if remaining < monthly_budget * 0.2 else 'You are on track. Keep logging your expenses to stay aware.'}"
 
     try:
-        prompt = f"You are a friendly financial advisor for a Ghanaian university student. Monthly budget: GHS {monthly_budget}. Spent this month: GHS {total}. Remaining: GHS {remaining}. Spending by category: {cats}. Give ONE short actionable tip (2-3 sentences). Use GHS. Be encouraging."
+        prompt = f"You are a friendly financial advisor for a Ghanaian university student. Monthly budget: GHS {monthly_budget}. Spent this month: GHS {total}. Remaining: GHS {remaining}. Spending by category: {cats}. Give ONE short actionable tip (2-3 sentences). Use GHS. Be encouraging. Respond in plain conversational text only — no markdown, no asterisks, no bullet points, no bold or italics, no headers."
         tip = call_groq([{"role": "user", "content": prompt}], max_tokens=600)
     except Exception as e:
         print(f"AI TIP ERROR: {e}")
@@ -1368,7 +1403,7 @@ def ai_chat():
     reply = f"You've spent ₵{total:.2f} this month with ₵{remaining:.2f} left. Focus on essential spending like feeding and transport to make it through the month comfortably."
 
     try:
-        system_prompt = f"You are FinWise AI, a friendly financial advisor for a Ghanaian university student. Monthly budget: GHS {monthly_budget}. Spent: GHS {total}. Remaining: GHS {remaining}. Spending by category: {cats}. {goal_info}. Keep responses to 3-4 sentences. Use GHS. Be practical and encouraging. This is general guidance, not licensed financial advice."
+        system_prompt = f"You are FinWise AI, a friendly financial advisor for a Ghanaian university student. Monthly budget: GHS {monthly_budget}. Spent: GHS {total}. Remaining: GHS {remaining}. Spending by category: {cats}. {goal_info}. Keep responses to 3-4 sentences, unless the user asks for a breakdown or a list of steps — then use short markdown bullet points. Use GHS. Be practical and encouraging. This is general guidance, not licensed financial advice. The chat UI renders markdown properly, so use **bold** for key figures or actions, and bullet/numbered lists when giving multiple recommendations. Don't overuse formatting — most replies should still read as natural conversation."
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_message}]
         reply = call_groq(messages, max_tokens=800)
     except Exception as e:

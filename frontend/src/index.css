@@ -130,9 +130,10 @@ body {
   font-weight: 700;
 }
 
+/* NEW */
 .sidebar-link svg {
   flex-shrink: 0;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
 }
 
 .sidebar-footer {
@@ -378,8 +379,9 @@ body {
   align-items: flex-start;
 }
 
+/*New*/ 
 .ai-tip-icon {
-  font-size: 1.5rem;
+  font-size: 2rem;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -425,6 +427,7 @@ body {
   margin-bottom: 1.75rem;
 }
 
+/* NEW */
 .auth-logo-icon {
   width: 42px;
   height: 42px;
@@ -433,7 +436,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 24px;
+  color: var(--gold);
 }
 
 .auth-logo-text {
@@ -742,15 +746,16 @@ body {
   border-bottom: none;
 }
 
+/* NEW */
 .expense-category-icon {
-  width: 38px;
-  height: 38px;
+  width: 46px;
+  height: 46px;
   border-radius: 10px;
   background: var(--green-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 22px;
   flex-shrink: 0;
 }
 
@@ -826,8 +831,9 @@ body {
   color: var(--text-muted);
 }
 
+/* NEW */
 .empty-state-icon {
-  font-size: 2.5rem;
+  font-size: 3.2rem;
   margin-bottom: 0.75rem;
 }
 
@@ -874,8 +880,9 @@ body {
   color: var(--gold);
 }
 
+/* NEW */
 .bottom-nav-item svg {
-  font-size: 1.3rem;
+  font-size: 1.7rem;
 }
 
 @media (max-width: 768px) {
@@ -1161,6 +1168,25 @@ body {
   animation-timing-function: ease-out;
   animation-fill-mode: forwards;
 }
+
+/* ── Markdown rendering inside AI chat bubbles ── */
+.chat-bubble.ai p { margin: 0 0 0.5rem; }
+.chat-bubble.ai p:last-child { margin-bottom: 0; }
+.chat-bubble.ai ul,
+.chat-bubble.ai ol { margin: 0.25rem 0 0.5rem; padding-left: 1.2rem; }
+.chat-bubble.ai li { margin-bottom: 0.15rem; }
+.chat-bubble.ai li:last-child { margin-bottom: 0; }
+.chat-bubble.ai strong { font-weight: 600; }
+.chat-bubble.ai h1,
+.chat-bubble.ai h2,
+.chat-bubble.ai h3,
+.chat-bubble.ai h4 { font-size: 1em; font-weight: 600; margin: 0.4rem 0 0.2rem; }
+.chat-bubble.ai code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; font-size: 0.85em; }
+
+/* ── Icon size bumps: badges, activity labels, chat avatars ── */
+.activity-col-title svg { font-size: 1.05rem; }
+.badge svg { font-size: 0.95rem; }
+.chat-avatar { font-size: 16px; }
 
 @keyframes saveProgress {
   from { width: 0; }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MdPaid } from 'react-icons/md';
+import { MdPaid, MdArrowBack } from 'react-icons/md';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
@@ -27,11 +27,21 @@ const Login = () => {
 
   return (
     <div className="auth-page">
+      <Link
+        to="/"
+        style={{
+          position: 'absolute', top: '1.5rem', left: '1.5rem',
+          display: 'flex', alignItems: 'center', gap: '0.3rem',
+          color: 'rgba(255,255,255,0.85)', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none',
+        }}
+      >
+        <MdArrowBack /> Back to home
+      </Link>
       <div className="auth-card">
-        <div className="auth-logo">
+        <Link to="/" className="auth-logo" style={{ textDecoration: 'none' }}>
           <div className="auth-logo-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MdPaid /></div>
           <span className="auth-logo-text">FinWise</span>
-        </div>
+        </Link>
 
         <h1 className="auth-title">Welcome back</h1>
         <p className="auth-subtitle">Sign in to manage your finances</p>
