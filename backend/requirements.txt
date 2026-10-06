@@ -1,0 +1,10 @@
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-JWT-Extended==4.6.0
+python-dotenv==1.0.1
+flask-cors==5.0.0
+Werkzeug==3.0.4
+Flask-Limiter
+groq
+gunicorn
+psycopg2-binary

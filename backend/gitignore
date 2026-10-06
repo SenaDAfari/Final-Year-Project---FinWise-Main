@@ -1,0 +1,7 @@
+.env
+.env.example
+*.db
+instance/
+venv/
+__pycache__/
+node_modules/

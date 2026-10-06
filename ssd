@@ -1,0 +1,23 @@
+[33mcommit f3cfb78ebcc0ae46f581bad3b0c58367528d9c74[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Damien Afari <senadamienafari@gmail.com>
+Date:   Mon Oct 5 23:37:03 2026 +0000
+
+    still fixing some minor issues
+
+[33mcommit c01bd3a44747fee93fd69796c75fcb0b57e04416[m
+Author: Damien Afari <senadamienafari@gmail.com>
+Date:   Mon Oct 5 22:45:52 2026 +0000
+
+    all functions work, just cleanup and visual tweaking left.
+
+[33mcommit aa7b90442841cd5f8efbe3d17005404ed92d81f8[m
+Author: Damien Afari <senadamienafari@gmail.com>
+Date:   Sun Sep 20 10:02:43 2026 +0000
+
+    working tree
+
+[33mcommit bc508bd2828a83313564d948ea680387acab633c[m
+Author: Damien Afari <senadamienafari@gmail.com>
+Date:   Sun Sep 20 09:59:12 2026 +0000
+
+    can run through test link on mobile. can't be installed as a PWA yet.
