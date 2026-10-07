@@ -1,34 +1,39 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  MdSmartToy, MdBarChart, MdWarning, MdSavings, MdHealthAndSafety, MdTrendingUp,
+  MdPaid, MdSchool, MdFlag, MdLock, MdHelpOutline, MdEventBusy, MdTrendingDown,
+  MdSentimentDissatisfied, MdMoneyOff
+} from 'react-icons/md';
 
 const FEATURES = [
   {
-    icon: '🧠',
+    icon: MdSmartToy,
     title: 'AI Financial Advisor',
     desc: 'Get personalized advice based on your actual spending patterns — not generic tips. Your AI advisor knows your budget, your categories, and your goals.',
   },
   {
-    icon: '📊',
+    icon: MdBarChart,
     title: 'Smart Budget Splitting',
     desc: 'Receive your allowance per semester? FinWise splits it intelligently into monthly budgets and warns you before you overspend.',
   },
   {
-    icon: '🚨',
+    icon: MdWarning,
     title: 'Survival Mode',
     desc: 'When your balance drops critically low, Survival Mode activates — showing your daily spending limit to make it to the end of the month.',
   },
   {
-    icon: '🎯',
+    icon: MdSavings,
     title: 'Savings Goals',
     desc: 'Set a target, log deposits, and watch your progress bar fill up. Whether it\'s a laptop, emergency fund, or trip home — FinWise keeps you accountable.',
   },
   {
-    icon: '💚',
+    icon: MdHealthAndSafety,
     title: 'Financial Health Score',
     desc: 'A real-time score out of 100 that reflects how well you\'re managing your money. Budget adherence, savings consistency, spending balance — all in one number.',
   },
   {
-    icon: '📈',
+    icon: MdTrendingUp,
     title: 'Spending Predictions',
     desc: 'Know exactly when you\'ll run out of money before it happens. FinWise tracks your daily spending rate and predicts your financial future.',
   },
@@ -82,7 +87,7 @@ const LandingPage = () => {
         transition: 'all 0.3s ease',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <div style={{ width: 36, height: 36, background: '#0A2E1A', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>💰</div>
+          <div style={{ width: 36, height: 36, background: '#0A2E1A', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff' }}><MdPaid /></div>
           <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0A2E1A', letterSpacing: '-0.5px' }}>FinWise</span>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -164,8 +169,16 @@ const LandingPage = () => {
 
           {/* Trust badges */}
           <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-            {['🎓 University Students', '🇬🇭 Built for Ghana', '🤖 AI-Powered', '🔒 Secure'].map(badge => (
-              <div key={badge} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', fontWeight: 600 }}>{badge}</div>
+            {[
+              { Icon: MdSchool, label: 'University Students' },
+              { Icon: MdFlag, label: 'Built for Ghana' },
+              { Icon: MdSmartToy, label: 'AI-Powered' },
+              { Icon: MdLock, label: 'Secure' },
+            ].map(badge => (
+              <div key={badge.label} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', fontWeight: 600 }}>
+                <badge.Icon style={{ fontSize: '1rem' }} />
+                {badge.label}
+              </div>
             ))}
           </div>
         </div>
@@ -193,12 +206,12 @@ const LandingPage = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
           {[
-            { emoji: '😰', text: '"I check my MoMo balance and wonder where it all went"' },
-            { emoji: '📅', text: '"I always run out of money before the end of the month"' },
-            { emoji: '🤷', text: '"I don\'t know how much I should be spending each day"' },
-            { emoji: '💸', text: '"I got my semester allowance and spent it in two months"' },
-            { emoji: '😟', text: '"Financial stress is affecting my studies"' },
-            { emoji: '🏦', text: '"Professional financial advisors are too expensive for me"' },
+            { Icon: MdHelpOutline, text: '"I check my MoMo balance and wonder where it all went"' },
+            { Icon: MdEventBusy, text: '"I always run out of money before the end of the month"' },
+            { Icon: MdSentimentDissatisfied, text: '"I don\'t know how much I should be spending each day"' },
+            { Icon: MdTrendingDown, text: '"I got my semester allowance and spent it in two months"' },
+            { Icon: MdSchool, text: '"Financial stress is affecting my studies"' },
+            { Icon: MdMoneyOff, text: '"Professional financial advisors are too expensive for me"' },
           ].map((item, i) => (
             <div key={i} style={{
               background: '#fff',
@@ -210,14 +223,14 @@ const LandingPage = () => {
               gap: '1rem',
               boxShadow: '0 2px 12px rgba(10,46,26,0.06)',
             }}>
-              <span style={{ fontSize: '1.6rem', flexShrink: 0 }}>{item.emoji}</span>
+              <item.Icon style={{ fontSize: '1.6rem', flexShrink: 0, color: '#1A5C38' }} />
               <span style={{ fontSize: '0.9rem', color: '#444', lineHeight: 1.5, fontStyle: 'italic' }}>{item.text}</span>
             </div>
           ))}
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0A2E1A' }}>FinWise was built to solve all of this. 👇</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0A2E1A' }}>FinWise was built to solve all of this.</div>
         </div>
       </section>
 
@@ -250,7 +263,7 @@ const LandingPage = () => {
                 padding: '1.75rem',
                 transition: 'all 0.3s',
               }}>
-                <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>{f.icon}</div>
+                <div style={{ fontSize: '2rem', marginBottom: '1rem', color: '#F4B942', display: 'flex' }}><f.icon /></div>
                 <div style={{ fontSize: '1rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.5rem' }}>{f.title}</div>
                 <div style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7 }}>{f.desc}</div>
               </div>
@@ -346,7 +359,7 @@ const LandingPage = () => {
       {/* ── FOOTER ── */}
       <footer style={{ background: '#061A0D', padding: '2.5rem 2rem', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <div style={{ width: 28, height: 28, background: '#F4B942', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>💰</div>
+          <div style={{ width: 28, height: 28, background: '#F4B942', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#0A2E1A' }}><MdPaid /></div>
           <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FFFFFF' }}>FinWise</span>
         </div>
         <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.82rem', marginBottom: '0.5rem' }}>
