@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   MdSmartToy, MdBarChart, MdWarning, MdSavings, MdHealthAndSafety, MdTrendingUp,
-  MdPaid, MdSchool, MdFlag, MdLock, MdHelpOutline, MdEventBusy, MdTrendingDown,
+  MdSchool, MdFlag, MdLock, MdHelpOutline, MdEventBusy, MdTrendingDown,
   MdSentimentDissatisfied, MdMoneyOff
 } from 'react-icons/md';
 
@@ -86,12 +86,19 @@ const LandingPage = () => {
         borderBottom: scrolled ? '1px solid rgba(0,0,0,0.06)' : 'none',
         transition: 'all 0.3s ease',
       }}>
+        {/* ── FIX: icon removed, text color now scroll-aware (white before scroll, dark green after) ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <div style={{ width: 36, height: 36, background: '#0A2E1A', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff' }}><MdPaid /></div>
-          <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0A2E1A', letterSpacing: '-0.5px' }}>FinWise</span>
+          <span style={{
+            fontSize: '1.4rem',
+            fontWeight: 800,
+            color: scrolled ? '#0A2E1A' : '#FFFFFF',
+            letterSpacing: '-0.5px',
+            transition: 'color 0.3s ease',
+          }}>
+            FinWise
+          </span>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          {/* ── FIX: colors now react to `scrolled` state, same as the nav background ── */}
           <Link to="/login" style={{
             padding: '0.55rem 1.1rem',
             borderRadius: 8,
