@@ -91,7 +91,17 @@ const LandingPage = () => {
           <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0A2E1A', letterSpacing: '-0.5px' }}>FinWise</span>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <Link to="/login" style={{ padding: '0.55rem 1.1rem', borderRadius: 8, border: '1.5px solid #0A2E1A', color: '#0A2E1A', fontWeight: 600, fontSize: '0.88rem', textDecoration: 'none', transition: 'all 0.2s' }}>
+          {/* ── FIX: colors now react to `scrolled` state, same as the nav background ── */}
+          <Link to="/login" style={{
+            padding: '0.55rem 1.1rem',
+            borderRadius: 8,
+            border: scrolled ? '1.5px solid #0A2E1A' : '1.5px solid rgba(255,255,255,0.7)',
+            color: scrolled ? '#0A2E1A' : '#FFFFFF',
+            fontWeight: 600,
+            fontSize: '0.88rem',
+            textDecoration: 'none',
+            transition: 'all 0.2s',
+          }}>
             Sign In
           </Link>
           <Link to="/register" style={{ padding: '0.55rem 1.25rem', borderRadius: 8, background: '#0A2E1A', color: '#F4B942', fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none', transition: 'all 0.2s' }}>
