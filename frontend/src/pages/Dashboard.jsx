@@ -371,7 +371,7 @@ const Dashboard = () => {
             className="progress-bar-fill"
             style={{
               width: `${Math.min(100, percentUsed)}%`,
-              background: percentUsed > 80 ? STATUS_COLOR.critical : percentUsed > 60 ? STATUS_COLOR.warning : STATUS_COLOR.good
+              background: percentUsed >= 100 ? STATUS_COLOR.critical : percentUsed >= 80 ? STATUS_COLOR.warning : STATUS_COLOR.good
             }}
           />
         </div>
