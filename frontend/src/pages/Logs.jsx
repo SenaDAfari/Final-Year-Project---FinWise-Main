@@ -222,7 +222,7 @@ const Logs = () => {
           </select>
           <select className="form-select" style={{ flex: 1, minWidth: 160 }} value={category} onChange={e => setCategory(e.target.value)}>
             <option value="">All categories</option>
-            {DEFAULT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            {userCategories.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>

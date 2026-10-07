@@ -83,6 +83,7 @@ const Settings = () => {
     if (!allowanceAmount) return null;
     if (allowanceFrequency === 'Per Semester') return (parseFloat(allowanceAmount) / semesterMonths).toFixed(2);
     if (allowanceFrequency === 'Weekly') return (parseFloat(allowanceAmount) * 4).toFixed(2);
+    if (allowanceFrequency === 'Bi-weekly') return (parseFloat(allowanceAmount) * 2).toFixed(2);
     return parseFloat(allowanceAmount).toFixed(2);
   };
 
@@ -168,6 +169,7 @@ const Settings = () => {
                 onChange={e => setAllowanceFrequency(e.target.value)}
               >
                 <option value="Weekly">Weekly</option>
+                <option value="Bi-weekly">Every 2 weeks</option>
                 <option value="Monthly">Monthly</option>
                 <option value="Per Semester">Per Semester (lump sum)</option>
               </select>
