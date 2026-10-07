@@ -477,6 +477,22 @@ def get_next_payday(user, today):
     return anchor
 
 
+def get_cycle_length_days(user, cycle_end):
+    """Length in days of the current allowance cycle ending at cycle_end,
+    used to work out the student's normal daily rate."""
+    frequency = user.allowance_frequency
+    if frequency == 'Weekly':
+        cycle_start = cycle_end - timedelta(days=7)
+    elif frequency == 'Bi-weekly':
+        cycle_start = cycle_end - timedelta(days=14)
+    elif frequency == 'Per Semester':
+        step = user.semester_months or 4
+        cycle_start = add_months(cycle_end, -step)
+    else:
+        cycle_start = add_months(cycle_end, -1)
+    return max(1, (cycle_end - cycle_start).days)
+
+
 @app.route('/api/dashboard', methods=['GET'])
 @jwt_required()
 def dashboard():
@@ -496,16 +512,22 @@ def dashboard():
     monthly_budget = user.monthly_budget or user.allowance_amount
     remaining = monthly_budget - total
     percent_used = (total / monthly_budget * 100) if monthly_budget > 0 else 0
-    survival_mode = remaining < monthly_budget * 0.2 and monthly_budget > 0
 
     today = datetime.now()
     next_payday = get_next_payday(user, today.date())
     if next_payday:
         days_left = max(1, (next_payday - today.date()).days)
+        cycle_length = get_cycle_length_days(user, next_payday)
     else:
         days_in_month = monthrange(today.year, today.month)[1]
         days_left = days_in_month - today.day + 1
+        cycle_length = days_in_month
     daily_budget = remaining / days_left if days_left > 0 else 0
+    normal_daily_rate = monthly_budget / cycle_length if cycle_length > 0 else 0
+    # Survival mode: today's remaining daily allowance has fallen below half
+    # the student's normal daily rate — a days-left-aware signal rather than
+    # a flat percentage of the total budget.
+    survival_mode = monthly_budget > 0 and daily_budget < normal_daily_rate * 0.5
     days_elapsed = today.day
     daily_spend_rate = total / days_elapsed if days_elapsed > 0 else 0
     days_until_broke = remaining / daily_spend_rate if daily_spend_rate > 0 else days_left
@@ -1367,10 +1389,41 @@ def ai_tip():
     for e in month_exps:
         cats[e.category] = cats.get(e.category, 0) + e.amount
 
-    tip = f"You've spent ₵{total:.2f} this month with ₵{remaining:.2f} remaining. {'You are running low — focus on essentials only.' if remaining < monthly_budget * 0.2 else 'You are on track. Keep logging your expenses to stay aware.'}"
+    today = datetime.now()
+    next_payday = get_next_payday(user, today.date())
+    if next_payday:
+        days_left = max(1, (next_payday - today.date()).days)
+        cycle_length = get_cycle_length_days(user, next_payday)
+    else:
+        days_in_month = monthrange(today.year, today.month)[1]
+        days_left = days_in_month - today.day + 1
+        cycle_length = days_in_month
+    daily_budget = remaining / days_left if days_left > 0 else 0
+    normal_daily_rate = monthly_budget / cycle_length if cycle_length > 0 else 0
+    # Same days-left-aware survival check as the dashboard, so the AI tip
+    # and the survival-mode banner never disagree with each other.
+    survival_mode = monthly_budget > 0 and daily_budget < normal_daily_rate * 0.5
+
+    tip = f"You've spent ₵{total:.2f} this month with ₵{remaining:.2f} remaining for {days_left} more days (about ₵{daily_budget:.2f}/day). {'You are running low — focus on essentials only.' if survival_mode else 'You are on track. Keep logging your expenses to stay aware.'}"
 
     try:
-        prompt = f"You are a friendly financial advisor for a Ghanaian university student. Monthly budget: GHS {monthly_budget}. Spent this month: GHS {total}. Remaining: GHS {remaining}. Spending by category: {cats}. Give ONE short actionable tip (2-3 sentences). Use GHS. Be encouraging. Respond in plain conversational text only — no markdown, no asterisks, no bullet points, no bold or italics, no headers."
+        urgency_rule = (
+            "The student is in survival mode: their remaining money is tight relative to days left. "
+            "Lead with a clear, honest warning about this — do not say anything resembling 'great job' or "
+            "'you're doing well' or similar praise, even if they are technically under their total budget. "
+            "Being encouraging must never override being honest about risk."
+            if survival_mode else
+            "The student currently has a reasonable daily budget for the days remaining. You can be encouraging, "
+            "but still mention the daily amount they have left so they stay aware, rather than implying they can relax."
+        )
+        prompt = (
+            f"You are a friendly financial advisor for a Ghanaian university student. "
+            f"Monthly budget: GHS {monthly_budget}. Spent this month: GHS {total}. Remaining: GHS {remaining}. "
+            f"Days left until next allowance: {days_left}. That is about GHS {daily_budget:.2f} per day remaining. "
+            f"Spending by category: {cats}. {urgency_rule} "
+            f"Give ONE short actionable tip (2-3 sentences) that reflects the real urgency of their situation. Use GHS. "
+            f"Respond in plain conversational text only — no markdown, no asterisks, no bullet points, no bold or italics, no headers."
+        )
         tip = call_groq([{"role": "user", "content": prompt}], max_tokens=600)
     except Exception as e:
         print(f"AI TIP ERROR: {e}")
