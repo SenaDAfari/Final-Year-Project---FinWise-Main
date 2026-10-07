@@ -1271,13 +1271,13 @@ def calculate_health_score(user):
     if monthly_budget > 0:
         percent_used = total_this_month / monthly_budget
         if percent_used > 1.0:
-            score -= 40
+            score -= 50
             reasons.append(f"You have exceeded your monthly budget by ₵{(total_this_month - monthly_budget):.2f}")
         elif percent_used > 0.85:
-            score -= 20
+            score -= 35
             reasons.append("You are close to exceeding your monthly budget")
         elif percent_used > 0.7:
-            score -= 10
+            score -= 15
             reasons.append("You have used over 70% of your monthly budget")
 
     # New accounts get a short grace period before savings rules apply
