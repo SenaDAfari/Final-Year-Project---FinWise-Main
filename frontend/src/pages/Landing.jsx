@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   MdSmartToy, MdBarChart, MdWarning, MdSavings, MdHealthAndSafety, MdTrendingUp,
   MdSchool, MdFlag, MdLock, MdHelpOutline, MdEventBusy, MdTrendingDown,
-  MdSentimentDissatisfied, MdMoneyOff
+  MdSentimentDissatisfied, MdMoneyOff, MdPaid 
 } from 'react-icons/md';
 
 const FEATURES = [
