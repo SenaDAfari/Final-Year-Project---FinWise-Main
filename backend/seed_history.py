@@ -4,7 +4,7 @@
 from datetime import date
 from app import app, db, User, Expense, CategoryLimit
 
-EMAIL = 'your-test-account-email@example.com'   # <-- change this
+EMAIL = 'test1@gmail.com'   # <-- change this
 
 def month_day(months_back, day=15):
     y, m = date.today().year, date.today().month - months_back
