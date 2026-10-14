@@ -327,7 +327,7 @@ const Dashboard = () => {
             }}
           >
             {[
-              { label: 'Budget', points: 40, icon: MdBarChart },
+              { label: 'Budget', points: 50, icon: MdBarChart },
               { label: 'Savings', points: 30, icon: MdSavings },
               { label: 'Balance', points: 20, icon: MdBalance },
               { label: 'Trend', points: 10, icon: MdTrendingUp },

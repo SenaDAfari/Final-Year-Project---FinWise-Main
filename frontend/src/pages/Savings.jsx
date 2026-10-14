@@ -61,7 +61,7 @@ const Savings = () => {
     return () => { isMountedRef.current = false; };
   }, []);
 
-  // Per-user sessionStorage key so milestone history doesn't leak across
+  // Per-user localStorage key so milestone history doesn't leak across
   // accounts sharing the same browser. Now stores a MAP of
   // { [goalId]: [milestones already shown] } instead of a flat set, since
   // milestones must be tracked independently per goal.
@@ -109,14 +109,14 @@ const Savings = () => {
 
   const loadShownMilestonesMap = () => {
     try {
-      return JSON.parse(sessionStorage.getItem(milestoneKey) || '{}');
+      return JSON.parse(localStorage.getItem(milestoneKey) || '{}');
     } catch {
       return {};
     }
   };
 
   const saveShownMilestonesMap = (map) => {
-    sessionStorage.setItem(milestoneKey, JSON.stringify(map));
+    localStorage.setItem(milestoneKey, JSON.stringify(map));
   };
 
   const fetchGoals = () => {
@@ -167,7 +167,7 @@ const Savings = () => {
   // shown, so they'd incorrectly fire on the NEXT deposit instead. Now:
   // iterate low-to-high, collect ALL newly-crossed thresholds, mark them
   // all as shown in one write, and display only the highest one reached.
-  // Runs per-goal, independently namespaced in sessionStorage.
+  // Runs per-goal, independently namespaced in localStorage.
   const checkAllMilestones = (goalsData) => {
     const map = loadShownMilestonesMap();
     let mapChanged = false;
